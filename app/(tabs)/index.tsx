@@ -15,17 +15,32 @@ export default function HomeScreen() {
 
   const fetchActivities = () => {
     const db = getDb();
-    db.transaction(tx => {
+    interface Tx {
+      executeSql: (
+      sqlStatement: string,
+      args?: any[],
+      successCallback?: (tx: Tx, resultSet: ResultSet) => void,
+      errorCallback?: (tx: Tx, error: any) => boolean
+      ) => void;
+    }
+
+    interface ResultSet {
+      rows: {
+      _array: Activity[];
+      };
+    }
+
+    db.transaction((tx: Tx) => {
       tx.executeSql(
-        'SELECT * FROM activities ORDER BY date DESC;',
-        [],
-        (_, { rows }) => {
-          setActivities(rows._array as Activity[]);
-        },
-        (_, error) => {
-          console.error('Failed to fetch activities:', error);
-          return true;
-        }
+      'SELECT * FROM activities ORDER BY date DESC;',
+      [],
+      (_: Tx, { rows }: ResultSet) => {
+        setActivities(rows._array as Activity[]);
+      },
+      (_: Tx, error: any) => {
+        console.error('Failed to fetch activities:', error);
+        return true;
+      }
       );
     });
   };
