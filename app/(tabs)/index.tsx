@@ -3,10 +3,28 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDb } from '@/lib/db';
 
+// 👇 Local fallback types since expo-sqlite doesn't export these properly
 type Activity = {
   id: number;
   steps: number;
   date: number;
+};
+
+type SQLResultSet = {
+  rows: {
+    _array: Activity[];
+    length: number;
+    item: (index: number) => Activity;
+  };
+};
+
+type SQLTransaction = {
+  executeSql: (
+    sqlStatement: string,
+    args?: unknown[],
+    successCallback?: (tx: SQLTransaction, resultSet: SQLResultSet) => void,
+    errorCallback?: (tx: SQLTransaction, error: unknown) => boolean
+  ) => void;
 };
 
 export default function HomeScreen() {
@@ -15,39 +33,26 @@ export default function HomeScreen() {
 
   const fetchActivities = () => {
     const db = getDb();
-    interface Tx {
-      executeSql: (
-      sqlStatement: string,
-      args?: any[],
-      successCallback?: (tx: Tx, resultSet: ResultSet) => void,
-      errorCallback?: (tx: Tx, error: any) => boolean
-      ) => void;
-    }
-
-    interface ResultSet {
-      rows: {
-      _array: Activity[];
-      };
-    }
-
-    db.transaction((tx: Tx) => {
+    db.transaction((tx: SQLTransaction) => {
       tx.executeSql(
-      'SELECT * FROM activities ORDER BY date DESC;',
-      [],
-      (_: Tx, { rows }: ResultSet) => {
-        setActivities(rows._array as Activity[]);
-      },
-      (_: Tx, error: any) => {
-        console.error('Failed to fetch activities:', error);
-        return true;
-      }
+        'SELECT * FROM activities ORDER BY date DESC;',
+        [],
+        (_tx, result) => {
+          setActivities(result.rows._array);
+        },
+        (_tx, error) => {
+          console.error('Failed to fetch activities:', error);
+          return true;
+        }
       );
     });
   };
 
-  useFocusEffect(useCallback(() => {
-    fetchActivities();
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      fetchActivities();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -63,6 +68,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 24, marginBottom: 20 },
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
 });
