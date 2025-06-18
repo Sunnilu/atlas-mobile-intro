@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getDb } from '@/lib/db';
-import type { SQLTransaction, SQLError } from 'expo-sqlite';
+import type { SQLTransaction } from '@/types/sqlite';
+
 
 export default function AddActivityScreen() {
   const router = useRouter();
