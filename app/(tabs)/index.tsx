@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDb } from '@/lib/db';
 import { FlashList } from '@shopify/flash-list';
-import type { SQLTransaction, ResultSet } from '@/types/sqlite'; // 👈 Import the correct types
+import type { SQLTransaction, ResultSet } from '@/types/sqlite';
 
 type Activity = {
   id: number;
@@ -17,26 +17,31 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchActivities = () => {
-    const db = getDb();
-    db.transaction((tx: SQLTransaction) => {
-      tx.executeSql(
-        'SELECT * FROM activities ORDER BY date DESC;',
-        [],
-        (_tx: SQLTransaction, result: ResultSet) => {
-          const rows = result.rows;
-          const items: Activity[] = [];
-          for (let i = 0; i < rows.length; i++) {
-            items.push(rows.item(i));
+    try {
+      const db = getDb();
+      db.transaction((tx: SQLTransaction) => {
+        tx.executeSql(
+          'SELECT * FROM activities ORDER BY date DESC;',
+          [],
+          (_tx: SQLTransaction, result: ResultSet) => {
+            const rows = result.rows;
+            const items: Activity[] = [];
+            for (let i = 0; i < rows.length; i++) {
+              items.push(rows.item(i));
+            }
+            setActivities(items);
+          },
+          (_tx: SQLTransaction, err: any) => {
+            console.error('❌ Error fetching activities:', err);
+            setError('Failed to load activities');
+            return true;
           }
-          setActivities(items);
-        },
-        (_tx: SQLTransaction, err: any) => {
-          console.error('❌ Error fetching activities:', err);
-          setError('Failed to load activities');
-          return true;
-        }
-      );
-    });
+        );
+      });
+    } catch (e) {
+      console.error('❌ SQLite not available:', e);
+      setError('Database not available on this platform.');
+    }
   };
 
   const deleteAllActivities = () => {
@@ -46,7 +51,7 @@ export default function HomeScreen() {
         'DELETE FROM activities;',
         [],
         () => {
-          console.log('✅ All activities deleted');
+          console.log('🧹 All activities deleted');
           fetchActivities(); // Refresh list
         },
         (_tx: SQLTransaction, err: any) => {
