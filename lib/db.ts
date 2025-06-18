@@ -1,10 +1,22 @@
-import { 
-  openDatabase, 
-  SQLiteDatabase 
-} from 'expo-sqlite';
+import { openDatabase } from 'expo-sqlite';
+
+interface Activity {
+  id?: number;
+  steps: number;
+  date: number;
+}
+
+interface ResultSet {
+  rows: {
+    _array?: Activity[];
+  };
+}
 
 interface Transaction {
-  executeSql(sqlQuery: string, args?: any[]): Promise<{ rows: { _array?: any[] } }>;
+  executeSql(
+    sqlQuery: string,
+    args?: any[]
+  ): Promise<ResultSet>;
 }
 
 interface Database {
@@ -37,5 +49,21 @@ export async function initDb() {
         date INTEGER NOT NULL
       );
     `);
+  });
+}
+
+// 🆕 Delete all activities
+export async function deleteAllActivities() {
+  const db = getDb();
+  await db.withTransactionAsync(async (tx: Transaction) => {
+    await tx.executeSql('DELETE FROM activities;');
+  });
+}
+
+// 🆕 Delete one activity by ID
+export async function deleteActivityById(id: number) {
+  const db = getDb();
+  await db.withTransactionAsync(async (tx: Transaction) => {
+    await tx.executeSql('DELETE FROM activities WHERE id = ?;', [id]);
   });
 }
