@@ -7,33 +7,31 @@ export default function AddActivityScreen() {
   const router = useRouter();
   const [steps, setSteps] = useState('');
 
-  const handleAdd = async () => {
+  const handleAdd = () => {
     const stepsNum = parseInt(steps, 10);
     if (isNaN(stepsNum) || stepsNum <= 0) {
       Alert.alert('Invalid input', 'Please enter a valid number of steps.');
       return;
     }
 
-    try {
-      const db = getDb();
-      const now = Math.floor(Date.now() / 1000); // UNIX timestamp
+    const db = getDb();
+    const now = Math.floor(Date.now() / 1000);
 
-      const result = await db.withTransactionAsync(async (tx: any) => {
-        await tx.executeSql(
-          'INSERT INTO activities (steps, date) VALUES (?, ?);',
-          [stepsNum, now]
-        );
-        return true;
-      });
-
-      if (result) {
-        console.log('✅ Activity added');
-        router.replace('/');
-      }
-    } catch (error) {
-      console.error('❌ Failed to insert activity:', error);
-      Alert.alert('Error', 'Failed to add activity. Please try again.');
-    }
+    db.transaction(tx => {
+      tx.executeSql(
+        'INSERT INTO activities (steps, date) VALUES (?, ?);',
+        [stepsNum, now],
+        () => {
+          console.log('✅ Activity added');
+          router.replace('/');
+        },
+        (_, error) => {
+          console.error('❌ Failed to insert activity:', error);
+          Alert.alert('Error', 'Failed to add activity.');
+          return true;
+        }
+      );
+    });
   };
 
   return (
