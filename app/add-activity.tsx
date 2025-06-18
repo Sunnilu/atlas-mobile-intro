@@ -18,7 +18,7 @@ export default function AddActivityScreen() {
       const db = getDb();
       const now = Math.floor(Date.now() / 1000); // UNIX timestamp
 
-      const result = await db.withTransactionAsync(async (tx: Transaction) => {
+      const result = await db.withTransactionAsync(async (tx: any) => {
         await tx.executeSql(
           'INSERT INTO activities (steps, date) VALUES (?, ?);',
           [stepsNum, now]
