@@ -15,24 +15,24 @@ export default function HomeScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActivities = async () => {
-    try {
-      const db = getDb();
-      setError(null);
+  const fetchActivities = () => {
+    const db = getDb();
+    setError(null);
 
-      const rows: Activity[] = await db.withTransactionAsync(async (tx: any) => {
-        const result = await tx.executeSql(
-          'SELECT * FROM activities ORDER BY date DESC;',
-          []
-        );
-        return result.rows._array || [];
-      });
-
-      setActivities(rows);
-    } catch (err) {
-      console.error('Database error:', err);
-      setError('Failed to fetch activities');
-    }
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM activities ORDER BY date DESC;',
+        [],
+        (_, result) => {
+          setActivities(result.rows._array || []);
+        },
+        (_, err) => {
+          console.error('Error fetching:', err);
+          setError('Failed to fetch activities');
+          return true;
+        }
+      );
+    });
   };
 
   useFocusEffect(
@@ -55,9 +55,9 @@ export default function HomeScreen() {
             Steps: {item.steps} | {new Date(item.date * 1000).toLocaleString()}
           </Text>
         )}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item.id.toString()}
         estimatedItemSize={40}
-        contentContainerStyle={{ paddingTop: 20 }} // changed from marginTop to paddingTop
+        contentContainerStyle={{ paddingTop: 20 }}
       />
     </View>
   );
