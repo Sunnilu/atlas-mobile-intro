@@ -1,26 +1,29 @@
-// lib/db.ts
-import * as SQLite from 'expo-sqlite';
-import type { SQLTransaction, SQLError } from 'expo-sqlite';
+import { Transaction } from '@/types';
+import { 
+  openDatabaseSync, 
+  SQLiteDatabase 
+} from 'expo-sqlite';
 
-const db = SQLite.openDatabase('activities.db');
 
-export function initDatabase() {
-  db.transaction(
-    (tx: SQLTransaction) => {
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS activities (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          steps INTEGER NOT NULL,
-          date INTEGER NOT NULL
-        );`
-      );
-    },
-    (error: SQLError) => {
-      console.error('Database initialization error:', error);
-    }
-  );
+let db: SQLiteDatabase | null = null;
+
+export function getDb(): SQLiteDatabase {
+  if (!db) {
+    db = openDatabaseSync('activities.db');
+  }
+  return db!;
 }
 
-export function getDb() {
-  return db;
+export async function initDb() {
+  const db = getDb();
+  
+  await db.withTransactionAsync(async () => {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        steps INTEGER NOT NULL,
+        date INTEGER NOT NULL
+      );
+    `);
+  });
 }
