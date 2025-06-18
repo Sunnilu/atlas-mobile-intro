@@ -1,8 +1,8 @@
-// app/add-activity.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getDb } from '@/lib/db';
+import type { SQLTransaction, SQLError } from 'expo-sqlite';
 
 export default function AddActivityScreen() {
   const router = useRouter();
@@ -18,20 +18,25 @@ export default function AddActivityScreen() {
     const db = getDb();
     const now = Math.floor(Date.now() / 1000); // UNIX timestamp
 
-    db.transaction(tx => {
-      tx.executeSql(
-        'INSERT INTO activities (steps, date) VALUES (?, ?);',
-        [stepsNum, now],
-        () => {
-          console.log('✅ Activity added');
-          router.replace('/'); // go back to home and refresh
-        },
-        (_, error) => {
-          console.error('❌ Failed to insert activity:', error);
-          return true;
-        }
-      );
-    });
+    db.transaction(
+      (tx: SQLTransaction) => {
+        tx.executeSql(
+          'INSERT INTO activities (steps, date) VALUES (?, ?);',
+          [stepsNum, now],
+          () => {
+            console.log('✅ Activity added');
+            router.replace('/');
+          },
+          (_tx: SQLTransaction, error: SQLError) => {
+            console.error('❌ Failed to insert activity:', error);
+            return true;
+          }
+        );
+      },
+      (err: SQLError) => {
+        console.error('Transaction failed:', err);
+      }
+    );
   };
 
   return (
