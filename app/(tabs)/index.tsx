@@ -1,5 +1,6 @@
+// Updated HomeScreen UI with design specs (fixed typings)
 import React, { useCallback, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, SafeAreaView } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDb } from '@/lib/db';
 import { FlashList } from '@shopify/flash-list';
@@ -24,10 +25,9 @@ export default function HomeScreen() {
           'SELECT * FROM activities ORDER BY date DESC;',
           [],
           (_tx: SQLTransaction, result: ResultSet) => {
-            const rows = result.rows;
             const items: Activity[] = [];
-            for (let i = 0; i < rows.length; i++) {
-              items.push(rows.item(i));
+            for (let i = 0; i < result.rows.length; i++) {
+              items.push(result.rows.item(i));
             }
             setActivities(items);
           },
@@ -52,7 +52,7 @@ export default function HomeScreen() {
         [],
         () => {
           console.log('🧹 All activities deleted');
-          fetchActivities(); // Refresh list
+          fetchActivities();
         },
         (_tx: SQLTransaction, err: any) => {
           console.error('❌ Failed to delete all activities:', err);
@@ -70,34 +70,72 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Activity List</Text>
-      {error && <Text style={styles.error}>{error}</Text>}
-
-      <Button title="Add Activity" onPress={() => router.push('/add-activity')} />
-
-      <View style={{ marginVertical: 10 }}>
-        <Button title="Delete All Activities" color="red" onPress={deleteAllActivities} />
-      </View>
+      {!!error && <Text style={styles.error}>{error}</Text>}
 
       <FlashList
         data={activities}
         renderItem={({ item }) => (
-          <Text style={styles.item}>
-            Steps: {item.steps} | {new Date(item.date * 1000).toLocaleString()}
-          </Text>
+          <View style={styles.activityBlock}>
+            <Text style={styles.activityText}>
+              Steps: {item.steps} | {new Date(item.date * 1000).toLocaleString()}
+            </Text>
+          </View>
         )}
-        keyExtractor={item => item.id.toString()}
-        estimatedItemSize={40}
-        contentContainerStyle={{ paddingTop: 20 }}
+        keyExtractor={(item) => item.id.toString()}
+        estimatedItemSize={27}
+        contentContainerStyle={styles.list}
       />
-    </View>
+
+      <View style={styles.buttonRow}>
+        <Button title="Add Activity" color="#1ED2AF" onPress={() => router.push('/add-activity')} />
+      </View>
+      <View style={styles.buttonRow}>
+        <Button title="Delete All Activities" color="#D00414" onPress={deleteAllActivities} />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: '600', marginBottom: 20 },
-  item: { marginBottom: 12, fontSize: 16 },
-  error: { color: 'red', marginBottom: 16 },
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#FEF9E6',
+  },
+  title: {
+    fontFamily: 'Inter',
+    fontWeight: '700',
+    fontSize: 10,
+    color: '#000000',
+    marginBottom: 8,
+  },
+  error: {
+    color: 'red',
+    marginBottom: 10,
+  },
+  list: {
+    paddingBottom: 20,
+  },
+  activityBlock: {
+    width: 133,
+    height: 27,
+    borderWidth: 1,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    marginBottom: 4,
+    paddingHorizontal: 8,
+  },
+  activityText: {
+    fontFamily: 'Inter',
+    fontWeight: '700',
+    fontSize: 10,
+    color: '#000000',
+  },
+  buttonRow: {
+    width: 142,
+    height: 7,
+    marginTop: 10,
+  },
 });
