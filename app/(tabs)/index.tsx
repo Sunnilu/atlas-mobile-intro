@@ -3,7 +3,6 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDb } from '@/lib/db';
 
-// ✅ Activity type for local use
 type Activity = {
   id: number;
   steps: number;
@@ -13,18 +12,26 @@ type Activity = {
 export default function HomeScreen() {
   const router = useRouter();
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchActivities = async () => {
-    const db = getDb();
-    
-    await db.withTransactionAsync(async () => {
-      const resultSet: any = await db.execAsync(
-        'SELECT * FROM activities ORDER BY date DESC;'
-      );
+    try {
+      const db = getDb();
+      setError(null); // Clear any previous errors
 
-      // resultSet is an array of result objects, take the first result's rows
-      setActivities(resultSet && resultSet[0]?.rows ? resultSet[0].rows : []);
-    });
+      const activities: Activity[] = await db.withTransactionAsync(async (tx: Transaction) => {
+        const result = await tx.executeSql(
+          'SELECT * FROM activities ORDER BY date DESC;',
+          []
+        );
+        return result.rows._array || [];
+      });
+
+      setActivities(activities);
+    } catch (err) {
+      console.error('Database error:', err);
+      setError('Failed to fetch activities');
+    }
   };
 
   useFocusEffect(
@@ -36,6 +43,9 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Activity List</Text>
+      {error && (
+        <Text style={styles.error}>{error}</Text>
+      )}
       <Button 
         title="Add Activity" 
         onPress={() => router.push('/add-activity')} 
@@ -61,4 +71,5 @@ const styles = StyleSheet.create({
   listContainer: { marginTop: 20 },
   item: { marginBottom: 12, fontSize: 16 },
   noData: { fontStyle: 'italic', color: '#888' },
+  error: { color: 'red', marginBottom: 16 }
 });
