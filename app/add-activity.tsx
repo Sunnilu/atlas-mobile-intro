@@ -2,42 +2,38 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getDb } from '@/lib/db';
-import type { SQLTransaction } from '@/types/sqlite';
-
 
 export default function AddActivityScreen() {
   const router = useRouter();
   const [steps, setSteps] = useState('');
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const stepsNum = parseInt(steps, 10);
     if (isNaN(stepsNum) || stepsNum <= 0) {
       Alert.alert('Invalid input', 'Please enter a valid number of steps.');
       return;
     }
 
-    const db = getDb();
-    const now = Math.floor(Date.now() / 1000); // UNIX timestamp
+    try {
+      const db = getDb();
+      const now = Math.floor(Date.now() / 1000); // UNIX timestamp
 
-    db.transaction(
-      (tx: SQLTransaction) => {
-        tx.executeSql(
+      const result = await db.withTransactionAsync(async (tx: Transaction) => {
+        await tx.executeSql(
           'INSERT INTO activities (steps, date) VALUES (?, ?);',
-          [stepsNum, now],
-          () => {
-            console.log('✅ Activity added');
-            router.replace('/');
-          },
-          (_tx: SQLTransaction, error: SQLError) => {
-            console.error('❌ Failed to insert activity:', error);
-            return true;
-          }
+          [stepsNum, now]
         );
-      },
-      (err: SQLError) => {
-        console.error('Transaction failed:', err);
+        return true;
+      });
+
+      if (result) {
+        console.log('✅ Activity added');
+        router.replace('/');
       }
-    );
+    } catch (error) {
+      console.error('❌ Failed to insert activity:', error);
+      Alert.alert('Error', 'Failed to add activity. Please try again.');
+    }
   };
 
   return (
