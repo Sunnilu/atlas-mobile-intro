@@ -10,43 +10,20 @@ type Activity = {
   date: number;
 };
 
-// ✅ SQLite response types (safely typed inline)
-type SQLResultSet = {
-  rows: {
-    _array: Activity[];
-    length: number;
-    item: (index: number) => Activity;
-  };
-};
-
-type SQLTransaction = {
-  executeSql: (
-    sqlStatement: string,
-    args?: unknown[],
-    successCallback?: (tx: SQLTransaction, resultSet: SQLResultSet) => void,
-    errorCallback?: (tx: SQLTransaction, error: unknown) => boolean
-  ) => void;
-};
-
 export default function HomeScreen() {
   const router = useRouter();
   const [activities, setActivities] = useState<Activity[]>([]);
 
-  const fetchActivities = () => {
+  const fetchActivities = async () => {
     const db = getDb();
-
-    db.transaction((tx: SQLTransaction) => {
-      tx.executeSql(
-        'SELECT * FROM activities ORDER BY date DESC;',
-        [],
-        (_tx, result) => {
-          setActivities(result.rows._array);
-        },
-        (_tx, error) => {
-          console.error('Failed to fetch activities:', error);
-          return true;
-        }
+    
+    await db.withTransactionAsync(async () => {
+      const resultSet: any = await db.execAsync(
+        'SELECT * FROM activities ORDER BY date DESC;'
       );
+
+      // resultSet is an array of result objects, take the first result's rows
+      setActivities(resultSet && resultSet[0]?.rows ? resultSet[0].rows : []);
     });
   };
 
@@ -59,7 +36,10 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Activity List</Text>
-      <Button title="Add Activity" onPress={() => router.push('/add-activity')} />
+      <Button 
+        title="Add Activity" 
+        onPress={() => router.push('/add-activity')} 
+      />
       <View style={styles.listContainer}>
         {activities.length === 0 ? (
           <Text style={styles.noData}>No activities yet</Text>
