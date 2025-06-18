@@ -4,8 +4,17 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": ["./*"],
+      "@app/*": ["./app/*"],
+      "@lib/*": ["./lib/*"],
+      "@types/*": ["./types/*"],
+      "@components/*": ["./app/components/*"],
+      "@screens/*": ["./app/screens/*"],
+      "@hooks/*": ["./app/hooks/*"],
+      "@utils/*": ["./app/utils/*"],
+      "@assets/*": ["./app/assets/*"]
+    },
+    "esModuleInterop": true
   },
   "include": ["app", "lib", "types.ts", "**/*.ts", "**/*.tsx"]
 }
