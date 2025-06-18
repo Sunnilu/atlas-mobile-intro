@@ -1,26 +1,20 @@
 // lib/db.ts
-import { openDatabase } from 'expo-sqlite/next';
+import * as SQLite from 'expo-sqlite';
 
-const db = openDatabase('activities.db');
+const db = SQLite.openDatabase('activities.db');
 
 export function getDb() {
   return db;
 }
 
-export async function initDb() {
-  await db.withTransactionAsync(async (tx) => {
-    await tx.executeSqlAsync(`
-      CREATE TABLE IF NOT EXISTS activities (
+export function initDb() {
+  db.transaction((tx) => {
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS activities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         steps INTEGER NOT NULL,
         date INTEGER NOT NULL
-      );
-    `);
-  });
-}
-export async function clearDb() {
-  await db.withTransactionAsync(async (tx) => {
-    await tx.executeSqlAsync('DROP TABLE IF EXISTS activities;');
-    await initDb();
+      );`
+    );
   });
 }
