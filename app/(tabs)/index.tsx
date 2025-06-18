@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDb } from '@/lib/db';
 import { FlashList } from '@shopify/flash-list';
@@ -17,29 +17,42 @@ export default function HomeScreen() {
 
   const fetchActivities = () => {
     const db = getDb();
-    setError(null);
-
     db.transaction(tx => {
       tx.executeSql(
         'SELECT * FROM activities ORDER BY date DESC;',
         [],
-        (_, result) => {
-          setActivities(result.rows._array || []);
-        },
+        (_, { rows }) => setActivities(rows._array || []),
         (_, err) => {
-          console.error('Error fetching:', err);
-          setError('Failed to fetch activities');
+          console.error('Failed to fetch:', err);
+          setError('Failed to load activities');
           return true;
         }
       );
     });
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchActivities();
-    }, [])
-  );
+  const deleteAllActivities = () => {
+    const db = getDb();
+    db.transaction(tx => {
+      tx.executeSql(
+        'DELETE FROM activities;',
+        [],
+        () => {
+          console.log('✅ All activities deleted');
+          fetchActivities(); // Refresh the list
+        },
+        (_, err) => {
+          console.error('❌ Failed to delete activities:', err);
+          Alert.alert('Error', 'Could not delete all activities.');
+          return true;
+        }
+      );
+    });
+  };
+
+  useFocusEffect(useCallback(() => {
+    fetchActivities();
+  }, []));
 
   return (
     <View style={styles.container}>
@@ -47,6 +60,11 @@ export default function HomeScreen() {
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Button title="Add Activity" onPress={() => router.push('/add-activity')} />
+
+      {/* ✅ New Button Below */}
+      <View style={{ marginVertical: 10 }}>
+        <Button title="Delete All Activities" color="red" onPress={deleteAllActivities} />
+      </View>
 
       <FlashList
         data={activities}
