@@ -1,7 +1,9 @@
+// app/index.tsx
 import React, { useCallback, useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDb } from '@/lib/db';
+import { FlashList } from '@shopify/flash-list';
 
 type Activity = {
   id: number;
@@ -17,9 +19,9 @@ export default function HomeScreen() {
   const fetchActivities = async () => {
     try {
       const db = getDb();
-      setError(null); // Clear any previous errors
+      setError(null);
 
-      const activities: Activity[] = await db.withTransactionAsync(async (tx: Transaction) => {
+      const rows: Activity[] = await db.withTransactionAsync(async (tx: any) => {
         const result = await tx.executeSql(
           'SELECT * FROM activities ORDER BY date DESC;',
           []
@@ -27,7 +29,7 @@ export default function HomeScreen() {
         return result.rows._array || [];
       });
 
-      setActivities(activities);
+      setActivities(rows);
     } catch (err) {
       console.error('Database error:', err);
       setError('Failed to fetch activities');
@@ -43,24 +45,20 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Activity List</Text>
-      {error && (
-        <Text style={styles.error}>{error}</Text>
-      )}
-      <Button 
-        title="Add Activity" 
-        onPress={() => router.push('/add-activity')} 
-      />
-      <View style={styles.listContainer}>
-        {activities.length === 0 ? (
-          <Text style={styles.noData}>No activities yet</Text>
-        ) : (
-          activities.map(activity => (
-            <Text key={activity.id} style={styles.item}>
-              Steps: {activity.steps} | Date: {new Date(activity.date * 1000).toLocaleString()}
-            </Text>
-          ))
+      {error && <Text style={styles.error}>{error}</Text>}
+      <Button title="Add Activity" onPress={() => router.push('/add-activity')} />
+      
+      <FlashList
+        data={activities}
+        renderItem={({ item }) => (
+          <Text style={styles.item}>
+            Steps: {item.steps} | {new Date(item.date * 1000).toLocaleString()}
+          </Text>
         )}
-      </View>
+        keyExtractor={(item) => item.id.toString()}
+        estimatedItemSize={40}
+        contentContainerStyle={{ marginTop: 20 }}
+      />
     </View>
   );
 }
@@ -68,8 +66,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: '#fff' },
   title: { fontSize: 22, fontWeight: '600', marginBottom: 20 },
-  listContainer: { marginTop: 20 },
   item: { marginBottom: 12, fontSize: 16 },
-  noData: { fontStyle: 'italic', color: '#888' },
-  error: { color: 'red', marginBottom: 16 }
+  error: { color: 'red', marginBottom: 16 },
 });
