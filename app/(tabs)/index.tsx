@@ -3,6 +3,7 @@ import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDb } from '@/lib/db';
 import { FlashList } from '@shopify/flash-list';
+import type { SQLTransaction, ResultSet } from '@/types/sqlite'; // 👈 Import the correct types
 
 type Activity = {
   id: number;
@@ -17,13 +18,20 @@ export default function HomeScreen() {
 
   const fetchActivities = () => {
     const db = getDb();
-    db.transaction(tx => {
+    db.transaction((tx: SQLTransaction) => {
       tx.executeSql(
         'SELECT * FROM activities ORDER BY date DESC;',
         [],
-        (_, { rows }) => setActivities(rows._array || []),
-        (_, err) => {
-          console.error('Failed to fetch:', err);
+        (_tx: SQLTransaction, result: ResultSet) => {
+          const rows = result.rows;
+          const items: Activity[] = [];
+          for (let i = 0; i < rows.length; i++) {
+            items.push(rows.item(i));
+          }
+          setActivities(items);
+        },
+        (_tx: SQLTransaction, err: any) => {
+          console.error('❌ Error fetching activities:', err);
           setError('Failed to load activities');
           return true;
         }
@@ -33,16 +41,16 @@ export default function HomeScreen() {
 
   const deleteAllActivities = () => {
     const db = getDb();
-    db.transaction(tx => {
+    db.transaction((tx: SQLTransaction) => {
       tx.executeSql(
         'DELETE FROM activities;',
         [],
         () => {
           console.log('✅ All activities deleted');
-          fetchActivities(); // Refresh the list
+          fetchActivities(); // Refresh list
         },
-        (_, err) => {
-          console.error('❌ Failed to delete activities:', err);
+        (_tx: SQLTransaction, err: any) => {
+          console.error('❌ Failed to delete all activities:', err);
           Alert.alert('Error', 'Could not delete all activities.');
           return true;
         }
@@ -50,9 +58,11 @@ export default function HomeScreen() {
     });
   };
 
-  useFocusEffect(useCallback(() => {
-    fetchActivities();
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      fetchActivities();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -61,7 +71,6 @@ export default function HomeScreen() {
 
       <Button title="Add Activity" onPress={() => router.push('/add-activity')} />
 
-      {/* ✅ New Button Below */}
       <View style={{ marginVertical: 10 }}>
         <Button title="Delete All Activities" color="red" onPress={deleteAllActivities} />
       </View>
