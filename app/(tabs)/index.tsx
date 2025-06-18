@@ -1,4 +1,3 @@
-// app/index.tsx
 import React, { useCallback, useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -46,8 +45,9 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Activity List</Text>
       {error && <Text style={styles.error}>{error}</Text>}
+
       <Button title="Add Activity" onPress={() => router.push('/add-activity')} />
-      
+
       <FlashList
         data={activities}
         renderItem={({ item }) => (
@@ -57,7 +57,7 @@ export default function HomeScreen() {
         )}
         keyExtractor={(item) => item.id.toString()}
         estimatedItemSize={40}
-        contentContainerStyle={{ marginTop: 20 }}
+        contentContainerStyle={{ paddingTop: 20 }} // changed from marginTop to paddingTop
       />
     </View>
   );
