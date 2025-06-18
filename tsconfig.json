@@ -1,47 +1,29 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@app/*": [
-        "./app/*"
-      ],
-      "@lib/*": [
-        "./lib/*"
-      ],
-      "@types/*": [
-        "./types/*"
-      ],
-      "@components/*": [
-        "./app/components/*"
-      ],
-      "@screens/*": [
-        "./app/screens/*"
-      ],
-      "@hooks/*": [
-        "./app/hooks/*"
-      ],
-      "@utils/*": [
-        "./app/utils/*"
-      ],
-      "@assets/*": [
-        "./app/assets/*"
-      ]
-    },
-    "esModuleInterop": true
+      "@/*": ["./*"],
+      "@app/*": ["./app/*"],
+      "@lib/*": ["./lib/*"],
+      "@types": ["./types"],
+      "@components/*": ["./app/components/*"],
+      "@screens/*": ["./app/screens/*"],
+      "@hooks/*": ["./app/hooks/*"],
+      "@utils/*": ["./app/utils/*"],
+      "@assets/*": ["./app/assets/*"]
+    }
   },
   "include": [
     "app",
     "lib",
-    "types.ts",
+    "types",
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
-  "extends": "expo/tsconfig.base"
+  ]
 }
