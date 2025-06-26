@@ -1,23 +1,90 @@
 // app/(tabs)/index.tsx
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { SwipeListView } from 'react-native-swipe-list-view';
+import {
+  getAllActivities,
+  addActivity,
+  deleteAllActivities,
+  deleteActivityById,
+  type Activity,
+} from '@/lib/db';
 
-export default function HomeTabScreen() {
+export default function HomeScreen() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+
+  const loadActivities = () => {
+    getAllActivities(setActivities);
+  };
+
+  useEffect(() => {
+    loadActivities();
+  }, []);
+
+  const handleAdd = () => {
+    const steps = Math.floor(Math.random() * 10000);
+    const date = Date.now();
+    addActivity(steps, date, loadActivities);
+  };
+
+  const handleDeleteAll = () => {
+    Alert.alert('Confirm', 'Delete all activities?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteAllActivities(loadActivities) },
+    ]);
+  };
+
+  const handleDeleteOne = (id: number) => {
+    deleteActivityById(id, loadActivities);
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Welcome to the Home Tab</Text>
+      <Button title="Add Random Activity" onPress={handleAdd} />
+      <Button title="Delete All" color="red" onPress={handleDeleteAll} />
+
+      <SwipeListView
+        data={activities}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.activity}>
+            <Text>Steps: {item.steps}</Text>
+            <Text>Date: {new Date(item.date).toLocaleString()}</Text>
+          </View>
+        )}
+        renderHiddenItem={({ item }) => (
+          <View style={styles.hiddenRow}>
+            <Button
+              title="Delete"
+              color="white"
+              onPress={() => handleDeleteOne(item.id)}
+            />
+          </View>
+        )}
+        rightOpenValue={-75}
+        disableRightSwipe
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    padding: 16,
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  text: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  activity: {
+    backgroundColor: '#f0f0f0',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  hiddenRow: {
+    backgroundColor: 'red',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingRight: 16,
+    height: '100%',
+    borderRadius: 8,
   },
 });
