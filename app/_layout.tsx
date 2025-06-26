@@ -1,41 +1,36 @@
-// app/_layout.tsx or app/layout.tsx
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+// app/_layout.tsx
 import { Stack } from 'expo-router';
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useCallback } from 'react';
-import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { initDb } from '@/lib/db'; // ✅ Make sure this exists and is exported properly
+import { initDb } from '@/lib/db';
 
-// Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  // Load custom fonts
-  const [loaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  // Run on first load when fonts are ready
   useEffect(() => {
-    if (loaded) {
+    if (fontsLoaded) {
       try {
-        initDb(); // ✅ Initialize SQLite db
+        initDb();
       } catch (e) {
-        console.error('❌ Failed to initialize DB:', e);
+        console.error('❌ Failed to init DB:', e);
       } finally {
         SplashScreen.hideAsync();
       }
     }
-  }, [loaded]);
+  }, [fontsLoaded]);
 
-  // If fonts not ready, return nothing
-  if (!loaded) return null;
+  if (!fontsLoaded) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -47,3 +42,4 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
