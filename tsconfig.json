@@ -9,7 +9,7 @@
       "@/*": ["./*"],
       "@app/*": ["./app/*"],
       "@lib/*": ["./lib/*"],
-      "@types": ["./types"],
+      "@types/*": ["./types/*"],
       "@components/*": ["./app/components/*"],
       "@screens/*": ["./app/screens/*"],
       "@hooks/*": ["./app/hooks/*"],
@@ -21,9 +21,9 @@
     "app",
     "lib",
     "types",
+    "expo-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    ".expo/types/**/*.ts"
   ]
 }
