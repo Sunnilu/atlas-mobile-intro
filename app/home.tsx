@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
-import { getAllActivities, addActivity, deleteAllActivities, type Activity } from '@/lib/db';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import {
+  getAllActivities,
+  addActivity,
+  deleteAllActivities,
+  type Activity,
+} from '@/lib/db';
 
 export default function HomeScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -26,8 +32,8 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Button title="Add Random Activity" onPress={handleAdd} />
-      <Button title="Delete All" onPress={handleDeleteAll} color="red" />
-      <FlatList
+      <Button title="Delete All" color="red" onPress={handleDeleteAll} />
+      <FlashList
         data={activities}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
@@ -36,6 +42,7 @@ export default function HomeScreen() {
             <Text>Date: {new Date(item.date).toLocaleString()}</Text>
           </View>
         )}
+        estimatedItemSize={80}
         ListEmptyComponent={<Text>No activities yet.</Text>}
       />
     </View>
