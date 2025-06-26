@@ -26,4 +26,10 @@
 //   ): void;
 // }
 // types/expo-sqlite-next.d.ts
-declare module 'expo-sqlite/next';
+// types/expo-sqlite.d.ts
+declare module 'expo-sqlite' {
+  export type SQLTransaction = any;
+  export type SQLResultSet = any;
+  export type SQLError = any;
+}
+
