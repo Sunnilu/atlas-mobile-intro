@@ -1,54 +1,89 @@
-// database.ts
-import * as SQLite from 'expo-sqlite/next';
+// lib/db.ts
+import * as SQLite from 'expo-sqlite';
 
-export async function setupDatabase() {
-  const db = await SQLite.openDatabaseAsync('databaseName');
+const db = SQLite.openDatabase('activities.db');
 
-  await db.execAsync(`
-    PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS test (
-      id INTEGER PRIMARY KEY NOT NULL,
-      value TEXT NOT NULL,
-      intValue INTEGER
+export type Activity = {
+  id: number;
+  steps: number;
+  date: number;
+};
+
+// Create the activities table if it doesn't exist
+export function initDb(): void {
+  db.transaction((tx) => {
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        steps INTEGER NOT NULL,
+        date INTEGER NOT NULL
+      );`
     );
-    INSERT INTO test (value, intValue) VALUES ('test1', 123);
-    INSERT INTO test (value, intValue) VALUES ('test2', 456);
-    INSERT INTO test (value, intValue) VALUES ('test3', 789);
-  `);
+  });
+}
 
-  const result = await db.runAsync(
-    'INSERT INTO test (value, intValue) VALUES (?, ?)',
-    'aaa',
-    100
-  );
-  console.log('Inserted:', result.lastInsertRowId, result.changes);
+// Insert a new activity
+export function addActivity(
+  steps: number,
+  date: number,
+  callback?: () => void
+): void {
+  db.transaction((tx) => {
+    tx.executeSql(
+      'INSERT INTO activities (steps, date) VALUES (?, ?);',
+      [steps, date],
+      () => callback?.(),
+      (_tx, error) => {
+        console.error('Insert error:', error);
+        return false;
+      }
+    );
+  });
+}
 
-  await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', [999, 'aaa']);
-  await db.runAsync('DELETE FROM test WHERE value = $value', { $value: 'aaa' });
+// Fetch all activities
+export function getAllActivities(callback: (rows: Activity[]) => void): void {
+  db.transaction((tx) => {
+    tx.executeSql(
+      'SELECT * FROM activities ORDER BY date DESC;',
+      [],
+      (_tx, result) => {
+        callback(result.rows._array as Activity[]);
+      },
+      (_tx, error) => {
+        console.error('Select error:', error);
+        return false;
+      }
+    );
+  });
+}
 
-  const firstRowRaw = await db.getFirstAsync('SELECT * FROM test');
-  const firstRow = firstRowRaw as { id: number; value: string; intValue: number };
-  console.log('First row:', firstRow.id, firstRow.value, firstRow.intValue);
+// Delete all activities
+export function deleteAllActivities(callback?: () => void): void {
+  db.transaction((tx) => {
+    tx.executeSql(
+      'DELETE FROM activities;',
+      [],
+      () => callback?.(),
+      (_tx, error) => {
+        console.error('Delete all error:', error);
+        return false;
+      }
+    );
+  });
+}
 
-  const allRowsRaw = await db.getAllAsync('SELECT * FROM test');
-  const allRows = allRowsRaw as { id: number; value: string; intValue: number }[];
-  console.log('All rows:');
-  allRows.forEach(row => console.log(row.id, row.value, row.intValue));
-
-  const countRowRaw = await db.getFirstAsync('SELECT COUNT(*) AS count FROM test');
-  const countRow = countRowRaw as { count: number };
-  console.log(`Row count before getEachAsync: ${countRow.count}`);
-
-  console.log('Streaming rows:');
-  try {
-    const stream = db.getEachAsync('SELECT * FROM test');
-    for await (const rowRaw of stream) {
-      const row = rowRaw as { id: number; value: string; intValue: number };
-      console.log(row.id, row.value, row.intValue);
-    }
-  } catch (err) {
-    console.error('Error iterating rows:', err);
-  }
-
-  return db;
+// Delete a single activity by its ID
+export function deleteActivityById(id: number, callback?: () => void): void {
+  db.transaction((tx) => {
+    tx.executeSql(
+      'DELETE FROM activities WHERE id = ?;',
+      [id],
+      () => callback?.(),
+      (_tx, error) => {
+        console.error('Delete by ID error:', error);
+        return false;
+      }
+    );
+  });
 }
