@@ -3,13 +3,17 @@ import * as SQLite from 'expo-sqlite';
 
 const db = SQLite.openDatabase('activities.db');
 
+export function getDb() {
+  return db;
+}
+
 export type Activity = {
   id: number;
   steps: number;
   date: number;
 };
 
-// Create the activities table if it doesn't exist
+// ✅ Initialize the activities table
 export function initDb(): void {
   db.transaction((tx) => {
     tx.executeSql(
@@ -22,7 +26,7 @@ export function initDb(): void {
   });
 }
 
-// Insert a new activity
+// ✅ Insert a new activity
 export function addActivity(
   steps: number,
   date: number,
@@ -41,7 +45,7 @@ export function addActivity(
   });
 }
 
-// Fetch all activities
+// ✅ Get all activities
 export function getAllActivities(callback: (rows: Activity[]) => void): void {
   db.transaction((tx) => {
     tx.executeSql(
@@ -58,7 +62,7 @@ export function getAllActivities(callback: (rows: Activity[]) => void): void {
   });
 }
 
-// Delete all activities
+// ✅ Delete all activities
 export function deleteAllActivities(callback?: () => void): void {
   db.transaction((tx) => {
     tx.executeSql(
@@ -73,7 +77,7 @@ export function deleteAllActivities(callback?: () => void): void {
   });
 }
 
-// Delete a single activity by its ID
+// ✅ Delete an activity by ID
 export function deleteActivityById(id: number, callback?: () => void): void {
   db.transaction((tx) => {
     tx.executeSql(
