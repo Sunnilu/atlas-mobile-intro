@@ -7,9 +7,8 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { initDb } from '@/lib/db'; // ✅ Import initDb
+import { initDb } from '@/lib/db';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -20,7 +19,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      initDb(); // ✅ Initialize the SQLite database
+      try {
+        initDb();
+      } catch (e) {
+        console.error('❌ Failed to initialize DB:', e);
+      }
       SplashScreen.hideAsync();
     }
   }, [loaded]);
