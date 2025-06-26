@@ -1,4 +1,4 @@
-// types/expo-sqlite.d.ts
+// types/sqlite-helper.d.ts
 
 declare module 'expo-sqlite' {
   export interface ResultSet {
