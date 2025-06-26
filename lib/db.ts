@@ -4,7 +4,6 @@ import * as SQLite from 'expo-sqlite/next';
 export async function setupDatabase() {
   const db = await SQLite.openDatabaseAsync('databaseName');
 
-  // Run schema + seed
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS test (
@@ -17,29 +16,38 @@ export async function setupDatabase() {
     INSERT INTO test (value, intValue) VALUES ('test3', 789);
   `);
 
-  // Insert
-  const result = await db.runAsync('INSERT INTO test (value, intValue) VALUES (?, ?)', 'aaa', 100);
+  const result = await db.runAsync(
+    'INSERT INTO test (value, intValue) VALUES (?, ?)',
+    'aaa',
+    100
+  );
   console.log('Inserted:', result.lastInsertRowId, result.changes);
 
-  // Update
   await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', [999, 'aaa']);
-
-  // Delete
   await db.runAsync('DELETE FROM test WHERE value = $value', { $value: 'aaa' });
 
-  // Get one
-  const firstRow = await db.getFirstAsync('SELECT * FROM test');
-  console.log('First row:', firstRow);
+  const firstRowRaw = await db.getFirstAsync('SELECT * FROM test');
+  const firstRow = firstRowRaw as { id: number; value: string; intValue: number };
+  console.log('First row:', firstRow.id, firstRow.value, firstRow.intValue);
 
-  // Get all
-  const allRows = await db.getAllAsync('SELECT * FROM test');
+  const allRowsRaw = await db.getAllAsync('SELECT * FROM test');
+  const allRows = allRowsRaw as { id: number; value: string; intValue: number }[];
   console.log('All rows:');
-  allRows.forEach(row => console.log(row));
+  allRows.forEach(row => console.log(row.id, row.value, row.intValue));
 
-  // Cursor
+  const countRowRaw = await db.getFirstAsync('SELECT COUNT(*) AS count FROM test');
+  const countRow = countRowRaw as { count: number };
+  console.log(`Row count before getEachAsync: ${countRow.count}`);
+
   console.log('Streaming rows:');
-  for await (const row of db.getEachAsync('SELECT * FROM test')) {
-    console.log(row);
+  try {
+    const stream = db.getEachAsync('SELECT * FROM test');
+    for await (const rowRaw of stream) {
+      const row = rowRaw as { id: number; value: string; intValue: number };
+      console.log(row.id, row.value, row.intValue);
+    }
+  } catch (err) {
+    console.error('Error iterating rows:', err);
   }
 
   return db;
