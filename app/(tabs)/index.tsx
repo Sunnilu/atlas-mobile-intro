@@ -1,6 +1,6 @@
 // app/(tabs)/index.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, Button, Alert, Pressable } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import {
   getAllActivities,
@@ -9,8 +9,23 @@ import {
   deleteActivityById,
   type Activity,
 } from '@/lib/db';
+import { router } from 'expo-router';
 
-export default function HomeScreen() {
+export default function Index() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.heading}>Edit app/index.tsx to edit screen.</Text>
+      
+      <Pressable onPress={() => router.push('/add-activity')}>
+        <Text style={styles.buttonText}>Click Me</Text>
+      </Pressable>
+
+      <HomeScreen />
+    </View>
+  );
+}
+
+function HomeScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
 
   const loadActivities = () => {
@@ -72,6 +87,17 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     flex: 1,
+  },
+  heading: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#1ED2AF',
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginBottom: 16,
   },
   activity: {
     backgroundColor: '#f0f0f0',
