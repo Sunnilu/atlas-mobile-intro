@@ -1,14 +1,17 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+// app/components/DatabaseProvider.tsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as SQLite from 'expo-sqlite';
 
+type DatabaseType = ReturnType<typeof SQLite.openDatabase>;
+
 type DatabaseContextType = {
-  db: SQLite.SQLiteDatabase | null;
+  db: DatabaseType | null;
 };
 
-const DatabaseContext = createContext<DatabaseContextType>({ db: null });
+const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
 
-export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
-  const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
+export function DatabaseProvider({ children }: { children: React.ReactNode }) {
+  const [db, setDb] = useState<DatabaseType | null>(null);
 
   useEffect(() => {
     const database = SQLite.openDatabase('activities.db');
@@ -20,6 +23,12 @@ export const DatabaseProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </DatabaseContext.Provider>
   );
-};
+}
 
-export const useDatabase = () => useContext(DatabaseContext);
+export function useDatabase() {
+  const context = useContext(DatabaseContext);
+  if (!context) {
+    throw new Error('useDatabase must be used within a DatabaseProvider');
+  }
+  return context;
+}
