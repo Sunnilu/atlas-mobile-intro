@@ -3,16 +3,20 @@ import { Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
-  const { activities, refreshActivities } = useActivities();
+  const { activities = [], refreshActivities } = useActivities(); // ✅ Correct destructure with fallback
 
   return (
     <View style={styles.container}>
-      {activities.map((activity) => (
-        <Text key={activity.id}>
-          {activity.steps} steps on{" "}
-          {new Date(activity.date).toLocaleDateString()}
-        </Text>
-      ))}
+      {activities.length > 0 ? (
+        activities.map((activity) => (
+          <Text key={activity.id}>
+            {activity.steps} steps on{" "}
+            {new Date(activity.date).toLocaleDateString()}
+          </Text>
+        ))
+      ) : (
+        <Text>No activities yet.</Text>
+      )}
 
       <Link style={styles.link} href="/add-activity" replace>
         <Text style={styles.buttonText}>Add Activity</Text>

@@ -8,7 +8,7 @@ type DatabaseContextType = {
   db: DatabaseType | null;
 };
 
-const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
+export const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
 
 export function DatabaseProvider({ children }: { children: React.ReactNode }) {
   const [db, setDb] = useState<DatabaseType | null>(null);
