@@ -15,6 +15,17 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const database = SQLite.openDatabase('activities.db');
+
+    database.transaction(tx => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS activities (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          steps INTEGER NOT NULL,
+          date TEXT NOT NULL
+        );`
+      );
+    });
+
     setDb(database);
   }, []);
 
