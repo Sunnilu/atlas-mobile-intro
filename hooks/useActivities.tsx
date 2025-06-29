@@ -5,6 +5,7 @@ export interface Activity {
   id: number;
   steps: number;
   date: string;
+  timestamp: number; // ← new field
 }
 
 export function useActivities() {
@@ -23,11 +24,16 @@ export function useActivities() {
         "SELECT id, steps, date FROM activities ORDER BY date DESC;",
         [],
         (_: unknown, { rows }: { rows: { _array: any[] } }) => {
-          const parsed: Activity[] = rows._array.map((row) => ({
-            id: Number(row.id),
-            steps: Number(row.steps),
-            date: String(row.date),
-          }));
+          const parsed: Activity[] = rows._array.map((row) => {
+            const dateString = String(row.date);
+            const timestamp = new Date(dateString).getTime();
+            return {
+              id: Number(row.id),
+              steps: Number(row.steps),
+              date: dateString,
+              timestamp,
+            };
+          });
           setActivities(parsed);
         },
         (error: any) => {
