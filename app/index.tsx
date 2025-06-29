@@ -14,7 +14,7 @@ export default function Index() {
         </Text>
       ))}
 
-      <Link style={styles.link} href="/add-activity-screen" replace>
+      <Link style={styles.link} href="/add-activity" replace>
         <Text style={styles.buttonText}>Add Activity</Text>
       </Link>
     </View>
