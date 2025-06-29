@@ -1,9 +1,18 @@
 import { useActivities } from "@/hooks/useActivities";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
-  const { activities = [], refreshActivities } = useActivities(); // ✅ Correct destructure with fallback
+  const { activities = [], refreshActivities } = useActivities();
+
+  // Auto-refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refreshActivities();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
