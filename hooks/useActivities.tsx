@@ -20,10 +20,15 @@ export function useActivities() {
 
     db.transaction((tx: any) => {
       tx.executeSql(
-        "SELECT * FROM activities ORDER BY date DESC;",
+        "SELECT id, steps, date FROM activities ORDER BY date DESC;",
         [],
-        (_: unknown, { rows }: { rows: { _array: Activity[] } }) => {
-          setActivities(rows._array);
+        (_: unknown, { rows }: { rows: { _array: any[] } }) => {
+          const parsed: Activity[] = rows._array.map((row) => ({
+            id: Number(row.id),
+            steps: Number(row.steps),
+            date: String(row.date),
+          }));
+          setActivities(parsed);
         },
         (error: any) => {
           console.error("Failed to fetch activities:", error);
