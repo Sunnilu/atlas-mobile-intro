@@ -1,67 +1,46 @@
-// database.ts
-import { SQLite } from 'expo-sqlite';
-
-// Enable promise support for SQLite
-SQLite.enablePromise(true);
-
-// Database configuration
-const DB_NAME = 'activities.db';
+// App.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { View, Text } from 'react-native';
+import { initDatabase } from './database';
 
 // Type definitions
-type Activity = {
-  id: number;
-  steps: number;
-  date: number;
+type RootStackParamList = {
+  Home: undefined;
+  AddActivity: undefined;
 };
 
-// Initialize database
-export const initDatabase = async (): Promise<void> => {
-  try {
-    const db = await SQLite.openDatabase(DB_NAME);
-    await db.transaction(tx => {
-      tx.executeSql(`
-        CREATE TABLE IF NOT EXISTS activities (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          steps INTEGER NOT NULL,
-          date INTEGER NOT NULL
-        );
-      `);
-    });
-    console.log('Database initialized successfully');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-    throw error;
-  }
-};
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Database operations
-export const addActivity = async (steps: number, date: number): Promise<void> => {
-  try {
-    const db = await SQLite.openDatabase(DB_NAME);
-    await db.transaction(tx => {
-      tx.executeSql(
-        'INSERT INTO activities (steps, date) VALUES (?, ?)',
-        [steps, date]
-      );
-    });
-  } catch (error) {
-    console.error('Error adding activity:', error);
-    throw error;
-  }
-};
+// HomeScreen component
+function HomeScreen({ navigation }: { navigation: any }) {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Home Screen</Text>
+      <Text>Steps: 0</Text>
+      <Text>Date: {new Date().toLocaleDateString()}</Text>
+      <Text>Database Status: Connected</Text>
+    </View>
+  );
+}
 
-export const getActivities = async (): Promise<Activity[]> => {
-  try {
-    const db = await SQLite.openDatabase(DB_NAME);
-    const [result] = await db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM activities ORDER BY date DESC',
-        []
-      );
+export default function App() {
+  useEffect(() => {
+    initDatabase().catch(error => {
+      console.error('Failed to initialize database:', error);
     });
-    return result.rows._array;
-  } catch (error) {
-    console.error('Error fetching activities:', error);
-    throw error;
-  }
-};
+  }, []);
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen 
+          name="Home" 
+          component={HomeScreen}
+          options={{ title: 'Activity Tracker' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
