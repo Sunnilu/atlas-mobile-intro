@@ -1,5 +1,4 @@
 // types/sqlite-helper.d.ts
-
 declare module 'expo-sqlite' {
   export interface ResultSet {
     insertId?: number;
@@ -26,7 +25,11 @@ declare module 'expo-sqlite' {
       errorCallback?: (error: any) => void,
       successCallback?: () => void
     ): void;
+    close(): Promise<void>;
   }
 
   export function openDatabase(name: string): SQLDatabase;
+  export function enablePromise(arg0: boolean): void;
 }
+
+export default SQLite;
