@@ -5,8 +5,6 @@
     "jsx": "react-native",
     "esModuleInterop": true,
     "baseUrl": ".",
-    "typeRoots": ["./types", "./node_modules/@types"],
-    "types": ["react", "react-native", "expo-router"],
     "paths": {
       "@/*": ["./*"],
       "@app/*": ["./app/*"],
@@ -25,7 +23,6 @@
     "types",
     "expo-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts"
+    "**/*.tsx"
   ]
 }
