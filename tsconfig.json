@@ -24,7 +24,6 @@
     "lib",
     "types",
     "expo-env.d.ts",
-    "types/global.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts"
