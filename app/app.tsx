@@ -1,20 +1,13 @@
 // App.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text } from 'react-native';
-import { initDatabase } from './database';
+import { initDb } from './lib/db'; // ✅ Corrected import
 
-// Type definitions
-type RootStackParamList = {
-  Home: undefined;
-  AddActivity: undefined;
-};
+const Stack = createNativeStackNavigator();
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-// HomeScreen component
-function HomeScreen({ navigation }: { navigation: any }) {
+function HomeScreen() {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Text>Home Screen</Text>
@@ -27,16 +20,19 @@ function HomeScreen({ navigation }: { navigation: any }) {
 
 export default function App() {
   useEffect(() => {
-    initDatabase().catch(error => {
-      console.error('Failed to initialize database:', error);
-    });
+    try {
+      initDb();
+      console.log('✅ Database initialized');
+    } catch (e) {
+      console.error('❌ Failed to initialize DB:', e);
+    }
   }, []);
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen 
-          name="Home" 
+        <Stack.Screen
+          name="Home"
           component={HomeScreen}
           options={{ title: 'Activity Tracker' }}
         />
