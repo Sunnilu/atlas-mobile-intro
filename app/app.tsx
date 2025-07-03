@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text } from 'react-native';
-import { initDb } from './lib/db'; // ✅ Corrected import
+import { initDb } from '@/lib/db'; // ✅ Corrected import
 
 const Stack = createNativeStackNavigator();
 
