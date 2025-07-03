@@ -6,15 +6,33 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@app/*": ["./app/*"],
-      "@lib/*": ["./lib/*"],
-      "@types/*": ["./types/*"],
-      "@components/*": ["./app/components/*"],
-      "@screens/*": ["./app/screens/*"],
-      "@hooks/*": ["./app/hooks/*"],
-      "@utils/*": ["./app/utils/*"],
-      "@assets/*": ["./app/assets/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@app/*": [
+        "./app/*"
+      ],
+      "@lib/*": [
+        "./lib/*"
+      ],
+      "@types/*": [
+        "./types/*"
+      ],
+      "@components/*": [
+        "./app/components/*"
+      ],
+      "@screens/*": [
+        "./app/screens/*"
+      ],
+      "@hooks/*": [
+        "./app/hooks/*"
+      ],
+      "@utils/*": [
+        "./app/utils/*"
+      ],
+      "@assets/*": [
+        "./app/assets/*"
+      ]
     }
   },
   "include": [
@@ -23,6 +41,7 @@
     "types",
     "expo-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".expo/types/**/*.ts"
   ]
 }
